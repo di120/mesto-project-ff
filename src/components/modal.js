@@ -1,25 +1,25 @@
-const openModal = (popupClass) => {
-  const popup = document.querySelector(popupClass);
+const openModal = (popup) => {
   popup.classList.add('popup_is-opened');
   document.addEventListener('keydown', handleEsc);
   popup.addEventListener('click', handleOverlay);
 };
 
-const closeModal = () => {
-  const closingPopup = document.querySelector('.popup_is-opened');
-  closingPopup.classList.remove('popup_is-opened');
+const closeModal = (popup) => {
+  popup.classList.remove('popup_is-opened');
   document.removeEventListener('keydown', handleEsc);
 };
 
 const handleEsc = (evt) => {
   if (evt.key === 'Escape') {
-    closeModal();
+    const closingPopup = document.querySelector('.popup_is-opened');
+    closeModal(closingPopup);
   }
 };
 
 const handleOverlay = (evt) => {
   if (evt.target.classList.contains('popup')) {
-      closeModal()
+      const closingPopup = document.querySelector('.popup_is-opened');
+      closeModal(closingPopup);
   }
 };
 

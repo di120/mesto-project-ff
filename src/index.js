@@ -10,25 +10,27 @@ const cardsContainer = content.querySelector('.places__list');
 const editButton = content.querySelector('.profile__edit-button');
 const addButton = content.querySelector('.profile__add-button');
 const popups = document.querySelectorAll('.popup');
+const closeBtns = document.querySelectorAll('.popup__close');
 const popupEdit = document.querySelector('.popup_type_edit');
 const editForm = popupEdit.querySelector('.popup__form');
 const nameInput = editForm.querySelector('.popup__input_type_name');
 const jobInput = editForm.querySelector('.popup__input_type_description');
 const popupNewCard = document.querySelector('.popup_type_new-card');
 const newCardForm = popupNewCard.querySelector('.popup__form');
-const closeBtns = document.querySelectorAll('.popup__close');
+const newCardName = newCardForm.querySelector('.popup__input_type_card-name');
+const newCardLink = newCardForm.querySelector('.popup__input_type_url');
+const popupImg = document.querySelector('.popup_type_image');
+const popupImgPicture = popupImg.querySelector('.popup__image');
+const popupImgText = popupImg.querySelector('.popup__caption');
 
 
 const openImgModal = (evt) => {
   if (evt.target.classList.contains('card__image')) {
-    const imgPopup = document.querySelector('.popup_type_image');
-    const popupImg = imgPopup.querySelector('.popup__image');
-    const popupText = imgPopup.querySelector('.popup__caption');
     const cardTitle = evt.target.closest('.places__item').querySelector('.card__title');
-    popupImg.src = evt.target.src;
-    popupImg.alt = evt.target.alt;
-    popupText.textContent = cardTitle.textContent;
-    openModal('.popup_type_image');
+    popupImgPicture.src = evt.target.src;
+    popupImgPicture.alt = evt.target.alt;
+    popupImgText.textContent = cardTitle.textContent;
+    openModal(popupImg);
   }
 };
 
@@ -36,16 +38,14 @@ function handleEditSubmit(evt) {
   evt.preventDefault();
   profileTitle.textContent = nameInput.value;
   profileDescription.textContent = jobInput.value;
-  closeModal();
+  closeModal(popupEdit);
 };
 
 function handleNewCardSubmit(evt) {
   evt.preventDefault();
-  const newCardName = newCardForm.querySelector('.popup__input_type_card-name');
-  const newCardLink = newCardForm.querySelector('.popup__input_type_url');
   const newCard = createCard(newCardName.value, newCardLink.value, deleteCard, likeCard, openImgModal);
   cardsContainer.prepend(newCard);
-  closeModal();
+  closeModal(popupNewCard);
   newCardName.value = '';
   newCardLink.value = '';
 };
@@ -60,19 +60,17 @@ popups.forEach((popup) => {
 });
 
 editButton.addEventListener('click', () => {
-  openModal('.popup_type_edit');
+  openModal(popupEdit);
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
 });
 
 editForm.addEventListener('submit', handleEditSubmit);
 
-addButton.addEventListener('click', () => openModal('.popup_type_new-card'));
+addButton.addEventListener('click', () => openModal(popupNewCard));
 
 newCardForm.addEventListener('submit', handleNewCardSubmit);
 
 closeBtns.forEach(function (closeBtn) {
-  closeBtn.addEventListener('click', closeModal)
+  closeBtn.addEventListener('click', () => closeModal(closeBtn.closest('.popup')))
 });
-
-export { cardsContainer };

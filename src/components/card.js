@@ -1,10 +1,9 @@
-import { cardsContainer } from '../index.js';
-
 const createCard = (name, link, deleteCard, likeCard, openImgModal) => {
   const cardTemplate = document.querySelector('#card-template').content;
   const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
   const cardImage = cardElement.querySelector('.card__image');
   const deleteButton = cardElement.querySelector('.card__delete-button');
+  const likeButton = cardElement.querySelector('.card__like-button');
 
   cardElement.querySelector('.card__title').textContent = name;
   cardImage.src = link;
@@ -12,9 +11,9 @@ const createCard = (name, link, deleteCard, likeCard, openImgModal) => {
 
   deleteButton.addEventListener('click', deleteCard);
 
-  cardsContainer.addEventListener('click', likeCard);
+  likeButton.addEventListener('click', likeCard);
 
-  cardsContainer.addEventListener('click', openImgModal);
+  cardImage.addEventListener('click', openImgModal);
 
   return cardElement;
 };
