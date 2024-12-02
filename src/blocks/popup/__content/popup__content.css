@@ -17,3 +17,11 @@
     padding: 30px 20px;
   }
 }
+
+.popup .popup__content-delete {
+  min-height: 181px;
+}
+
+.popup .popup__content-edit-profile-img {
+  min-height: 272px;
+}
