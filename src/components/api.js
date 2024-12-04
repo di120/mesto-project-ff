@@ -6,13 +6,24 @@ const config = {
   }
 }
 
-const getUserData = fetch (`${config.baseUrl}/users/me`, {
-  headers: config.headers
-});
+const handleResponse = res => {
+  if(res.ok) {
+     return res.json();
+   }
+  return Promise.reject(`Ошибка: ${res.status}`)
+};
 
-const getCards = fetch (`${config.baseUrl}/cards`, {
-  headers: config.headers
-});
+const getUserData =
+  fetch (`${config.baseUrl}/users/me`, {
+    headers: config.headers
+  })
+  .then((res) => handleResponse(res));
+
+const getCards =
+  fetch (`${config.baseUrl}/cards`, {
+    headers: config.headers
+  })
+  .then((res) => handleResponse(res));
 
 function postNewCard (createdCardName, createdCardUrl) {
   return fetch (`${config.baseUrl}/cards`, {
@@ -23,6 +34,7 @@ function postNewCard (createdCardName, createdCardUrl) {
       link: createdCardUrl
     })
   })
+  .then((res) => handleResponse(res))
 }
 
 function updateUserData (newName, newDescription) {
@@ -34,6 +46,7 @@ function updateUserData (newName, newDescription) {
       about: newDescription
     })
   })
+  .then((res) => handleResponse(res))
 }
 
 function updateProfileImg (newUrl) {
@@ -44,6 +57,7 @@ function updateProfileImg (newUrl) {
       avatar: newUrl
     })
   })
+  .then((res) => handleResponse(res))
 };
 
 function requestCardRemove (id) {
@@ -51,21 +65,24 @@ function requestCardRemove (id) {
     method: 'DELETE',
     headers: config.headers
   })
+  .then((res) => handleResponse(res))
 }
 
-function requestAddLike (cardId, likeCounterElement) {
+function requestAddLike (cardId) {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'PUT',
     headers: config.headers
   })
+  .then((res) => handleResponse(res))
 }
 
-function requestDeleteLike (cardId, likeCounterElement) {
+function requestDeleteLike (cardId) {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'DELETE',
     headers: config.headers
   })
+  .then((res) => handleResponse(res))
 }
 
 
-export { getUserData, getCards, postNewCard, updateUserData, updateProfileImg, requestCardRemove, requestAddLike, requestDeleteLike };
+export { getUserData, getCards, handleResponse, postNewCard, updateUserData, updateProfileImg, requestCardRemove, requestAddLike, requestDeleteLike };

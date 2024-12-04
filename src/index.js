@@ -3,7 +3,7 @@ import { initialCards } from './components/cards.js';
 import { createCard, deleteCard, likeCard } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation, clearValidation } from './components/validation.js';
-import { getUserData, getCards, postNewCard, updateUserData, updateProfileImg, requestCardRemove } from './components/api.js';
+import { getUserData, getCards, handleResponse, postNewCard, updateUserData, updateProfileImg, requestCardRemove } from './components/api.js';
 
 const content = document.querySelector('.content');
 const profileTitle = content.querySelector('.profile__title');
@@ -41,18 +41,6 @@ const validationInfo = {
   inputErrorClass: 'popup__input-invalid',
   errorClass: 'popup__validation-message'
 };
-const createCardTemplate = [
-  'defineCardName',
-  'defineCardLink',
-  'defineCardId',
-  'defineCardOwnerId',
-  'defineLikesCount',
-  'currentUserId',
-  deleteCard,
-  popupDeleteImg,
-  likeCard,
-  openImgModal
-];
 
 function openImgModal (evt) {
   if (evt.target.classList.contains('card__image')) {
@@ -68,12 +56,9 @@ function handleEditSubmit(evt) {
   evt.preventDefault();
   renderLoading(true, editFormBtn);
   updateUserData(nameInput.value, jobInput.value)
-  .then((res) => {
-    if(res.ok) {
-      profileTitle.textContent = nameInput.value;
-      profileDescription.textContent = jobInput.value;
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
+  .then((data) => {
+    profileTitle.textContent = data.name;
+    profileDescription.textContent = data.about;
   })
   .catch((err) => {
     console.log(err);
@@ -88,21 +73,8 @@ function handleNewCardSubmit(evt) {
   evt.preventDefault();
   renderLoading(true, newCardFormBtn);
   postNewCard(newCardName.value, newCardLink.value)
-  .then((res) => {
-    if(res.ok) {
-      return res.json();
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
-  })
   .then(data => {
-    const cardTemplateCopy = createCardTemplate.map((element) => element);
-    cardTemplateCopy[0] = newCardName.value;
-    cardTemplateCopy[1] = newCardLink.value;
-    cardTemplateCopy[2] = data._id;
-    cardTemplateCopy[3] = data.owner._id;
-    cardTemplateCopy[4] = '0';
-    cardTemplateCopy[5] = currentUserId;
-    const newCard = createCard(cardTemplateCopy);
+    const newCard = createCard(data, currentUserId, deleteCard, likeCard, openImgModal);
     cardsContainer.prepend(newCard);
   })
   .catch((err) => {
@@ -111,8 +83,6 @@ function handleNewCardSubmit(evt) {
   .finally(() => {
     renderLoading(false, newCardFormBtn);
     closeModal(popupNewCard);
-    newCardName.value = '';
-    newCardLink.value = '';
   })
 };
 
@@ -132,7 +102,9 @@ editForm.addEventListener('submit', handleEditSubmit);
 addButton.addEventListener('click', () => {
   openModal(popupNewCard);
   clearValidation(popupNewCard, validationInfo);
-  });
+  newCardName.value = '';
+  newCardLink.value = '';
+});
 
 newCardForm.addEventListener('submit', handleNewCardSubmit);
 
@@ -151,11 +123,8 @@ function editProfileImg (evt) {
   evt.preventDefault();
   renderLoading(true, profileImgFormBtn);
   updateProfileImg(newProfileImgInput.value)
-  .then((res) => {
-    if(res.ok) {
-      profileImg.style.backgroundImage = `url(${newProfileImgInput.value})`;
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
+  .then((data) => {
+    profileImg.style.backgroundImage = `url(${data.avatar})`;
   })
   .catch((err) => {
     console.log(err);
@@ -170,42 +139,18 @@ function editProfileImg (evt) {
 enableValidation(validationInfo);
 
 function renderLoading (isLoading, button) {
-  if(isLoading) {
-    button.textContent = 'Сохранение...';
-  } else {
-    button.textContent = 'Сохранить';
-  }
+  button.textContent = isLoading ? 'Сохранение...' : 'Сохранить';
 }
 
 Promise.all([getUserData, getCards])
-  .then(responses => Promise.all(responses.map(r => r.json())))
-  .then((data) => {
-    const userData = data[0];
+  .then(([userData, cardsData]) => {
     profileTitle.textContent = userData.name;
     profileDescription.textContent = userData.about;
     profileImg.style.backgroundImage = `url(${userData.avatar})`;
     currentUserId = userData._id;
 
-    const cardsData = data[1];
-    cardsData.forEach(function (card) {
-      const cardTemplateCopy = createCardTemplate.map((element) => element);
-      cardTemplateCopy[0] = card.name;
-      cardTemplateCopy[1] = card.link;
-      cardTemplateCopy[2] = card._id;
-      cardTemplateCopy[3] = card.owner._id;
-      cardTemplateCopy[4] = card.likes.length;
-
-      const createdCard = createCard(cardTemplateCopy);
-      if(card.owner._id !== currentUserId) {
-        const deleteButton = createdCard.querySelector('.card__delete-button');
-        deleteButton.remove();
-      }
-      card.likes.forEach((likeInfo) => {
-        if (likeInfo._id === currentUserId) {
-          const likeButton = createdCard.querySelector('.card__like-button');
-          likeButton.classList.add('card__like-button_is-active');
-        }
-      })
+    cardsData.forEach(function (cardData) {
+      const createdCard = createCard(cardData, currentUserId, deleteCard, likeCard, openImgModal);
       cardsContainer.append(createdCard);
     })
   })
@@ -214,4 +159,4 @@ Promise.all([getUserData, getCards])
   });
 
 
-export { profileTitle, profileDescription, nameInput, jobInput, cardsContainer, newCardName, newCardLink, popupDeleteImg, openImgModal };
+export { popupDeleteImg };
