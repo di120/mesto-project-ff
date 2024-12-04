@@ -42,11 +42,13 @@ const deleteCard = (evt, cardId) => {
   openModal(popupDeleteImg);
   deleteModalBtn.onclick = () => {
     requestCardRemove(cardId)
+      .then(() => {
+        cardItem.remove();
+      })
       .catch((err) => {
         console.log(err);
       })
       .finally(() => {
-        cardItem.remove();
         closeModal(popupDeleteImg);
       })
   }
